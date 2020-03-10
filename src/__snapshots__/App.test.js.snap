@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App empty 1`] = `
+<div
+  class="StyledGrommet-sc-19lkkz7-0 gVQrIe"
+>
+  <div
+    class="StyledBox-sc-13pk1d4-0 hXYuFp"
+  >
+    <h1
+      class="StyledHeading-sc-1rdh4aw-0 kZPGVt"
+    >
+      comming soon ...
+    </h1>
+  </div>
+</div>
+`;
