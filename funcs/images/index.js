@@ -9,7 +9,7 @@ const bucket = storage.bucket('grommet-images');
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-exports.sites = (req, res) => {
+exports.images = (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
 
   if (req.method === 'OPTIONS') {
@@ -20,62 +20,48 @@ exports.sites = (req, res) => {
     return;
   }
   if (req.method === 'GET') {
-    const id = decodeURIComponent(req.url.split('/')[1]);
-    const file = bucket.file(`${id}.json`);
-    return file
-      .download()
+    const filename = decodeURIComponent(req.url.split('/')[1]);
+    if (filename) {
+      const file = bucket.file(filename);
+      const type = filename.split('.')[1];
+      return file
+        .download()
+        .then(data =>
+          res
+            .status(200)
+            .set('Content-Type', `image/${type}`)
+            .send(data[0]),
+        )
+        .catch(e => res.status(400).send(e.message));
+    }
+    // list files
+    return bucket
+      .getFiles()
       .then(data => {
-        const site = JSON.parse(data[0]);
-        const date = new Date(site.date);
-        date.setMilliseconds(0);
-        site.date = date.toISOString();
+        const files = data[0];
+        return Promise.all(files.map(file => file.getMetadata()));
+      })
+      .then(metadatas => {
+        return metadatas.map(d => d[0].name);
+      })
+      .then(names =>
         res
           .status(200)
           .type('json')
-          .send(JSON.stringify(site));
-      })
-      .catch(e => res.status(400).send(e.message));
+          .send(JSON.stringify(names)),
+      );
   }
   if (req.method === 'POST') {
-    const site = req.body;
-    const id = encodeURIComponent(
-      `${site.name}-${site.email.replace('@', '-')}`.replace(/\.|\s+/g, '-'),
-    );
-    const file = bucket.file(`${id}.json`);
+    const { filename, contentType } = req.body;
+    // TODO: check that the user is authorized to upload
+
+    const file = bucket.file(filename);
+    const expires = Date.now() + 300000; // Link expires in 5 minutes
+    const config = { action: 'write', expires, contentType };
+
     return file
-      .download()
-      .then(data => {
-        const existingSite = JSON.parse(data[0]);
-
-        const existingPin = new Date(existingSite.date).getMilliseconds();
-        const pin = new Date(site.date).getMilliseconds();
-        if (pin !== existingPin) {
-          res.status(403).send('Unauthorized');
-          return;
-        }
-
-        file
-          .save(JSON.stringify(site), { resumable: false })
-          .then(() =>
-            res
-              .status(200)
-              .type('text')
-              .send(id),
-          )
-          .catch(e => res.status(500).send(e.message));
-      })
-      .catch(() => {
-        // doesn't exist yet, add it
-        file
-          .save(JSON.stringify(site), { resumable: false })
-          .then(() =>
-            res
-              .status(201)
-              .type('text')
-              .send(id),
-          )
-          .catch(e => res.status(500).send(e.message));
-      });
+      .getSignedUrl(config)
+      .then(data => res.type('text').send(data[0]));
   }
   res.status(405).send();
 };
