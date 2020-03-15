@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactGA from 'react-ga';
 import {
   Box,
   Button,
@@ -51,7 +52,14 @@ const Manage = ({ images, onDone }) => {
                 hoverIndicator
                 onClick={() => {
                   setDeleting(image);
-                  deleteImage(image).then(onDone);
+                  deleteImage(image)
+                    .then(() => {
+                      ReactGA.event({
+                        category: 'manage',
+                        action: 'delete image',
+                      });
+                    })
+                    .then(onDone);
                 }}
               />
             </Box>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactGA from 'react-ga';
 import styled from 'styled-components';
 import {
   Box,
@@ -47,6 +48,12 @@ const Add = ({ onDone }) => {
           event.preventDefault();
           setUploading(true);
           uploadImages(files, email, pin)
+            .then(() => {
+              ReactGA.event({
+                category: 'manage',
+                action: 'add image',
+              });
+            })
             .then(() => setUploading(false))
             .then(onDone)
             .catch(error => {

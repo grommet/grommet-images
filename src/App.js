@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import ReactGA from 'react-ga';
 import { Grommet, grommet } from 'grommet';
 import { filterMine, loadImages } from './images';
 import Add from './Add';
@@ -10,9 +11,20 @@ const App = () => {
   const [images, setImages] = useState();
   const [view, setView] = useState();
 
+  // initialize analytics
+  React.useEffect(() => {
+    if (window.location.host !== 'localhost') {
+      const {
+        location: { pathname },
+      } = window;
+      ReactGA.initialize('UA-99690204-6');
+      ReactGA.pageview(pathname);
+    }
+  }, []);
+
   useEffect(() => {
     if (!view) {
-      setImages([]);
+      setImages(undefined);
       loadImages().then(nextImages => setImages(nextImages));
     }
   }, [view]);
