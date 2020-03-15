@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import {
   Anchor,
@@ -9,11 +9,12 @@ import {
   Heading,
   Image,
   InfiniteScroll,
+  ResponsiveContext,
   Stack,
   Text,
   TextInput,
 } from 'grommet';
-import { Add, Search } from 'grommet-icons';
+import { Add, List, Search } from 'grommet-icons';
 import { apiUrl } from './images';
 
 const ImageName = styled(Text)`
@@ -21,6 +22,7 @@ const ImageName = styled(Text)`
 `;
 
 const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
+  const responsive = useContext(ResponsiveContext);
   const [search, setSearch] = useState('');
 
   const images = useMemo(() => {
@@ -32,15 +34,24 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
     <Box>
       <Header pad="medium" gap="xlarge">
         <Heading margin="none">images</Heading>
-        <TextInput
-          icon={<Search />}
-          value={search}
-          onChange={event => setSearch(event.target.value)}
-        />
-        <Box flex={false} direction="row" align="center" gap="medium">
-          {mine && <Anchor label="manage" onClick={onManage} />}
-          <Button icon={<Add />} primary onClick={onAdd} />
-        </Box>
+        {responsive !== 'small' && [
+          <TextInput
+            key="search"
+            icon={<Search />}
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+          />,
+          <Box
+            key="actions"
+            flex={false}
+            direction="row"
+            align="center"
+            gap="medium"
+          >
+            {mine && <Anchor label="manage" onClick={onManage} />}
+            <Button icon={<Add />} primary onClick={onAdd} />
+          </Box>,
+        ]}
       </Header>
       <Grid pad="medium" columns="small" rows="small" gap="medium">
         <InfiniteScroll items={images}>
@@ -77,6 +88,21 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
           )}
         </InfiniteScroll>
       </Grid>
+      {responsive === 'small' && (
+        <Box
+          pad="medium"
+          direction="row"
+          align="center"
+          gap="medium"
+          justify="center"
+          background={{ color: 'background', opacity: 'strong' }}
+          style={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
+        >
+          <Button icon={<Search />} hoverIndicator />
+          <Button icon={<Add />} primary hoverIndicator onClick={onAdd} />
+          {mine && <Button icon={<List />} hoverIndicator onClick={onManage} />}
+        </Box>
+      )}
     </Box>
   );
 };
