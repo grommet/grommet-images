@@ -65,7 +65,7 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
               {({ hover }) => (
                 <Stack fill>
                   <Box fill>
-                    <Image src={`${apiUrl}/${image}`} fit="contain" />
+                    <Image src={`${apiUrl}/${image}?size=192`} fit="contain" />
                   </Box>
                   <Box
                     fill

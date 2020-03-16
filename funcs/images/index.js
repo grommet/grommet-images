@@ -1,8 +1,18 @@
 const { Storage } = require('@google-cloud/storage');
+const sharp = require('sharp');
 
 const storage = new Storage();
 const bucket = storage.bucket('grommet-images');
 const metaFilename = `_meta.json`;
+
+const parseParams = (query = '') => {
+  const params = {};
+  query.split('&').forEach(p => {
+    const [k, v] = p.split('=');
+    params[k] = decodeURIComponent(v);
+  });
+  return params;
+};
 
 /**
  * Responds to any HTTP request.
@@ -20,18 +30,26 @@ exports.images = (req, res) => {
     res.status(204).send('');
     return;
   }
+
   if (req.method === 'GET') {
-    const filename = decodeURIComponent(req.url.slice(1));
+    const [path, query] = req.url.split('?');
+    const filename = decodeURIComponent(path.slice(1));
+    const params = parseParams(query);
     if (filename) {
       const file = bucket.file(filename);
       const type = filename.split('.')[1];
       return file
         .download()
+        .then(data => {
+          let result = sharp(data[0]);
+          if (params.size) result = result.resize(parseInt(params.size, 10));
+          return result.toBuffer();
+        })
         .then(data =>
           res
             .status(200)
             .set('Content-Type', `image/${type}`)
-            .send(data[0]),
+            .send(data),
         )
         .catch(e => res.status(400).send(e.message));
     }
@@ -55,6 +73,7 @@ exports.images = (req, res) => {
           .send(JSON.stringify(names)),
       );
   }
+
   if (req.method === 'POST') {
     const { emailSlug, pin, filename, contentType } = req.body;
     if (!emailSlug || !pin || !filename || !contentType) {
@@ -92,6 +111,7 @@ exports.images = (req, res) => {
         }
       });
   }
+
   if (req.method === 'DELETE') {
     const filename = decodeURIComponent(req.url.slice(1));
     const { emailSlug, pin } = req.body;
@@ -114,5 +134,6 @@ exports.images = (req, res) => {
         .catch(e => res.status(400).send(e.message));
     });
   }
+
   res.status(405).send();
 };
