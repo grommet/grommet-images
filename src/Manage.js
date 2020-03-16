@@ -38,7 +38,7 @@ const Manage = ({ images, onDone }) => {
             >
               <Box flex="shrink" direction="row" align="center" gap="medium">
                 <Box width="xsmall" height="xsmall">
-                  <Image src={`${apiUrl}/${image}`} fit="contain" />
+                  <Image src={`${apiUrl}/${image}?size=192`} fit="contain" />
                 </Box>
                 <Text size="large">{image}</Text>
               </Box>
