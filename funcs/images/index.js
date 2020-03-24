@@ -7,7 +7,7 @@ const metaFilename = `_meta.json`;
 
 const parseParams = (query = '') => {
   const params = {};
-  query.split('&').forEach(p => {
+  query.split('&').forEach((p) => {
     const [k, v] = p.split('=');
     params[k] = decodeURIComponent(v);
   });
@@ -40,37 +40,32 @@ exports.images = (req, res) => {
       const type = filename.split('.')[1];
       return file
         .download()
-        .then(data => {
+        .then((data) => {
+          if (filename.endsWith('.gif')) return data[0];
           let result = sharp(data[0]);
           if (params.size) result = result.resize(parseInt(params.size, 10));
           return result.toBuffer();
         })
-        .then(data =>
-          res
-            .status(200)
-            .set('Content-Type', `image/${type}`)
-            .send(data),
+        .then((data) =>
+          res.status(200).set('Content-Type', `image/${type}`).send(data),
         )
-        .catch(e => res.status(400).send(e.message));
+        .catch((e) => res.status(400).send(e.message));
     }
     // list files
     return bucket
       .getFiles()
-      .then(data => {
+      .then((data) => {
         const files = data[0];
-        return Promise.all(files.map(file => file.getMetadata()));
+        return Promise.all(files.map((file) => file.getMetadata()));
       })
-      .then(metadatas => {
+      .then((metadatas) => {
         // remove _meta files
         return metadatas
-          .map(d => d[0].name)
-          .filter(n => !n.endsWith(metaFilename));
+          .map((d) => d[0].name)
+          .filter((n) => !n.endsWith(metaFilename));
       })
-      .then(names =>
-        res
-          .status(200)
-          .type('json')
-          .send(JSON.stringify(names)),
+      .then((names) =>
+        res.status(200).type('json').send(JSON.stringify(names)),
       );
   }
 
@@ -84,7 +79,7 @@ exports.images = (req, res) => {
     const file = bucket.file(`${emailSlug}/${metaFilename}`);
     return file
       .download()
-      .then(data => {
+      .then((data) => {
         const meta = JSON.parse(data[0]);
         if (pin !== meta.pin) {
           res.status(403).send('Unauthorized');
@@ -99,7 +94,7 @@ exports.images = (req, res) => {
           .save(JSON.stringify(meta), { resumable: false })
           .then(() => true);
       })
-      .then(ok => {
+      .then((ok) => {
         if (ok) {
           const file = bucket.file(`${emailSlug}/${filename}`);
           const expires = Date.now() + 300000; // Link expires in 5 minutes
@@ -107,7 +102,7 @@ exports.images = (req, res) => {
 
           return file
             .getSignedUrl(config)
-            .then(data => res.type('text').send(data[0]));
+            .then((data) => res.type('text').send(data[0]));
         }
       });
   }
@@ -121,7 +116,7 @@ exports.images = (req, res) => {
     }
     // check ownership
     const file = bucket.file(`${emailSlug}/${metaFilename}`);
-    return file.download().then(data => {
+    return file.download().then((data) => {
       const meta = JSON.parse(data[0]);
       if (pin !== meta.pin) {
         res.status(403).send('Unauthorized');
@@ -130,8 +125,8 @@ exports.images = (req, res) => {
       const file = bucket.file(filename);
       return file
         .delete()
-        .then(data => res.status(200).send())
-        .catch(e => res.status(400).send(e.message));
+        .then((data) => res.status(200).send())
+        .catch((e) => res.status(400).send(e.message));
     });
   }
 
