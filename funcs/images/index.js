@@ -14,6 +14,8 @@ const parseParams = (query = '') => {
   return params;
 };
 
+const sharpenTypes = ['image/jpeg', 'image/png'];
+
 /**
  * Responds to any HTTP request.
  *
@@ -37,18 +39,25 @@ exports.images = (req, res) => {
     const params = parseParams(query);
     if (filename) {
       const file = bucket.file(filename);
-      const type = filename.split('.')[1];
       return file
-        .download()
-        .then((data) => {
-          if (filename.endsWith('.gif')) return data[0];
-          let result = sharp(data[0]);
-          if (params.size) result = result.resize(parseInt(params.size, 10));
-          return result.toBuffer();
+        .getMetadata()
+        .then((data1) => {
+          const contentType = data1[0].contentType;
+          return file
+            .download()
+            .then((data) => {
+              if (sharpenTypes.includes(contentType)) {
+                let result = sharp(data[0]);
+                if (params.size)
+                  result = result.resize(parseInt(params.size, 10));
+                return result.toBuffer();
+              }
+              return data[0];
+            })
+            .then((data) =>
+              res.status(200).set('Content-Type', contentType).send(data),
+            );
         })
-        .then((data) =>
-          res.status(200).set('Content-Type', `image/${type}`).send(data),
-        )
         .catch((e) => res.status(400).send(e.message));
     }
     // list files
