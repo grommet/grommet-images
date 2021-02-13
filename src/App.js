@@ -12,7 +12,7 @@ const App = () => {
   const [view, setView] = useState();
 
   // initialize analytics
-  React.useEffect(() => {
+  useEffect(() => {
     if (window.location.host !== 'localhost') {
       const {
         location: { pathname },
@@ -25,7 +25,7 @@ const App = () => {
   useEffect(() => {
     if (!view) {
       setImages(undefined);
-      loadImages().then(nextImages => setImages(nextImages));
+      loadImages().then((nextImages) => setImages(nextImages));
     }
   }, [view]);
 
