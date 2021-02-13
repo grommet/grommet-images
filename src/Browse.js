@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import {
   Anchor,
@@ -23,12 +23,21 @@ const ImageName = styled(Text)`
 
 const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
   const responsive = useContext(ResponsiveContext);
+  const [count, setCount] = useState(0);
   const [search, setSearch] = useState('');
 
   const images = useMemo(() => {
     const exp = new RegExp(search, 'i');
-    return search ? allImages.filter(i => exp.test(i)) : allImages;
+    setCount(0);
+    return search ? allImages.filter((i) => exp.test(i)) : allImages;
   }, [allImages, search]);
+
+  useEffect(() => {
+    if (count < images.length) {
+      const timer = setTimeout(() => setCount(count + 1), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [count, images]);
 
   return (
     <Box>
@@ -39,7 +48,7 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
             key="search"
             icon={<Search />}
             value={search}
-            onChange={event => setSearch(event.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
           />,
           <Box
             key="actions"
@@ -53,9 +62,9 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
           </Box>,
         ]}
       </Header>
-      <Grid pad="medium" columns="small" rows="small" gap="medium">
+      <Grid pad="large" columns="small" rows="small" gap="medium">
         <InfiniteScroll items={images}>
-          {image => (
+          {(image, index) => (
             <Button
               key={image}
               href={`${apiUrl}/${image}`}
@@ -64,8 +73,19 @@ const Browse = ({ images: allImages, mine, onAdd, onManage }) => {
             >
               {({ hover }) => (
                 <Stack fill>
-                  <Box fill>
-                    <Image src={`${apiUrl}/${image}?size=192`} fit="contain" />
+                  <Box
+                    fill
+                    animation={{ type: 'fadeIn', duration: index * 200 }}
+                    background={
+                      index > count ? 'background-contrast' : undefined
+                    }
+                  >
+                    {index <= count && (
+                      <Image
+                        src={`${apiUrl}/${image}?size=192`}
+                        fit="contain"
+                      />
+                    )}
                   </Box>
                   <Box
                     fill
