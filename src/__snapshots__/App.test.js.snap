@@ -2,18 +2,18 @@
 
 exports[`App empty 1`] = `
 <div
-  class="StyledGrommet-sc-19lkkz7-0 iELeSu"
+  class="StyledGrommet-sc-19lkkz7-0 cgWvLW"
   style="min-height: 100vh;"
 >
   <div
-    class="StyledBox-sc-13pk1d4-0 gRVoOz"
+    class="StyledBox-sc-13pk1d4-0 fBnLMr"
   >
     <div
-      class="StyledBox-sc-13pk1d4-0 AsXxn"
+      class="StyledBox-sc-13pk1d4-0 hSQeaj"
     >
       <svg
         aria-label="InProgress"
-        class="StyledIcon-ofa7kd-0 lneDmx"
+        class="StyledIcon-ofa7kd-0 epgkHd"
         viewBox="0 0 24 24"
       >
         <path
