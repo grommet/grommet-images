@@ -46,11 +46,10 @@ exports.images = (req, res) => {
           return file
             .download()
             .then((data) => {
-              if (sharpenTypes.includes(contentType)) {
-                let result = sharp(data[0]);
-                if (params.size)
-                  result = result.resize(parseInt(params.size, 10));
-                return result.toBuffer();
+              if (sharpenTypes.includes(contentType) && params.size) {
+                return sharp(data[0])
+                  .resize(parseInt(params.size, 10))
+                  .toBuffer();
               }
               return data[0];
             })
